@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>週5筋トレ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0a;--surface:#111;--card:#161616;--border:#222;--text:#f0f0f0;--muted:#555;--accent:#e85d04;--day-color:#e85d04;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-weight:300;display:flex;flex-direction:column;}
+.screen{display:none;flex-direction:column;height:100%;overflow:hidden;}
+.screen.active{display:flex;}
+.scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+
+/* BOTTOM NAV */
+.bottom-nav{display:flex;background:#0d0d0d;border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0;cursor:pointer;color:var(--muted);font-size:10px;letter-spacing:1px;transition:color .2s;}
+.nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;}
+.nav-item.active{color:var(--day-color);}
+
+/* HOME */
+.home-header{padding:20px 20px 0;}
+.home-date{font-size:11px;letter-spacing:2px;color:var(--muted);}
+.home-greeting{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-top:4px;line-height:1.1;}
+.today-card{margin:16px 20px;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;}
+.today-card-accent{position:absolute;top:0;left:0;right:0;height:3px;background:var(--day-color);}
+.today-card-inner{padding:20px;}
+.today-label{font-size:10px;letter-spacing:3px;color:var(--muted);}
+.today-day{font-family:'Bebas Neue',sans-serif;font-size:48px;line-height:1;color:var(--day-color);margin:4px 0;}
+.today-part{font-size:22px;font-weight:700;letter-spacing:1px;}
+.today-sub{font-size:12px;color:var(--muted);margin-top:6px;}
+.today-progress-wrap{margin-top:16px;}
+.today-progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px;}
+.progress-bar-bg{background:var(--border);border-radius:4px;height:6px;overflow:hidden;}
+.progress-bar-fill{height:100%;background:var(--day-color);border-radius:4px;transition:width .4s ease;}
+.start-btn{display:block;width:100%;margin-top:16px;padding:14px;background:var(--day-color);color:#000;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:14px;letter-spacing:2px;border:none;border-radius:8px;cursor:pointer;text-align:center;}
+.rest-card{margin:16px 20px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:32px 20px;text-align:center;}
+.rest-icon{font-size:40px;margin-bottom:12px;}
+.rest-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:var(--muted);}
+.rest-sub{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.8;}
+.streak-row{display:flex;gap:10px;margin:0 20px 16px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;align-items:center;}
+.streak-icon{font-size:28px;}
+.streak-text{flex:1;}
+.streak-num{font-family:'Bebas Neue',sans-serif;font-size:32px;line-height:1;color:#ffbe0b;}
+.streak-label{font-size:11px;color:var(--muted);letter-spacing:1px;}
+.week-cal{margin:0 20px 20px;}
+.week-cal-title{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:10px;}
+.week-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.week-day{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.week-day-label{font-size:9px;color:var(--muted);}
+.week-day-dot{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);}
+
+/* WORKOUT */
+.workout-header{padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:10;}
+.back-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;display:flex;}
+.back-btn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;}
+.workout-header-info{flex:1;}
+.workout-header-part{font-size:11px;letter-spacing:2px;color:var(--day-color);}
+.workout-header-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;line-height:1;}
+.workout-header-progress{font-size:11px;color:var(--muted);margin-top:2px;}
+.ex-list{padding:12px 16px 100px;}
+.ex-card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--day-color);border-radius:8px;margin-bottom:10px;overflow:hidden;}
+.ex-head{padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.ex-num-badge{width:28px;height:28px;border-radius:50%;background:color-mix(in srgb,var(--day-color) 15%,transparent);color:var(--day-color);font-family:'Bebas Neue',sans-serif;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ex-info{flex:1;min-width:0;}
+.ex-name{font-size:14px;font-weight:700;}
+.ex-sets-label{font-size:11px;color:var(--muted);margin-top:2px;}
+.ex-chevron{color:var(--muted);transition:transform .25s;font-size:18px;flex-shrink:0;}
+.ex-card.open .ex-chevron{transform:rotate(45deg);}
+.ex-body{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.ex-card.open .ex-body{max-height:900px;}
+.ex-inner{padding:0 16px 16px;border-top:1px solid var(--border);}
+.ex-section{margin-top:12px;}
+.ex-section-title{font-size:9px;letter-spacing:3px;color:var(--day-color);font-weight:700;margin-bottom:8px;}
+.ex-how{list-style:none;}
+.ex-how li{font-size:12px;line-height:1.8;color:#bbb;padding-left:14px;position:relative;margin-bottom:2px;}
+.ex-how li::before{content:'—';position:absolute;left:0;color:var(--day-color);font-size:9px;top:4px;}
+.point-item{background:color-mix(in srgb,var(--day-color) 8%,transparent);border-left:2px solid var(--day-color);padding:7px 10px;font-size:11px;line-height:1.6;color:#bbb;border-radius:0 4px 4px 0;margin-bottom:5px;}
+.sets-tracker{margin-top:14px;}
+.sets-tracker-title{font-size:9px;letter-spacing:3px;color:var(--day-color);font-weight:700;margin-bottom:8px;}
+.sets-row{display:flex;gap:8px;flex-wrap:wrap;}
+.set-btn{width:44px;height:44px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:'Bebas Neue',sans-serif;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.set-btn.done{background:var(--day-color);border-color:var(--day-color);color:#000;font-size:16px;}
+.memo-area{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:10px;resize:none;height:64px;margin-top:8px;}
+.memo-area::placeholder{color:var(--muted);}
+.timer-fab{position:fixed;bottom:80px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--day-color);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px color-mix(in srgb,var(--day-color) 40%,transparent);z-index:50;transition:transform .2s;flex-direction:column;gap:0;}
+.timer-fab:active{transform:scale(.9);}
+.timer-fab svg{width:22px;height:22px;stroke:#000;fill:none;stroke-width:2;}
+.timer-fab .timer-count{font-family:'Bebas Neue',sans-serif;font-size:13px;color:#000;line-height:1;}
+
+/* TIMER MODAL */
+.timer-modal{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.timer-modal.show{display:flex;}
+.timer-display{font-family:'Bebas Neue',sans-serif;font-size:96px;color:var(--day-color);line-height:1;text-align:center;}
+.timer-label{font-size:12px;letter-spacing:3px;color:var(--muted);text-align:center;margin-bottom:32px;}
+.timer-btns{display:flex;gap:12px;margin-top:24px;}
+.timer-btn{padding:12px 28px;border-radius:8px;border:none;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:14px;cursor:pointer;}
+.timer-btn.primary{background:var(--day-color);color:#000;}
+.timer-btn.secondary{background:var(--surface);color:var(--text);border:1px solid var(--border);}
+.timer-presets{display:flex;gap:8px;margin-top:20px;}
+.timer-preset{padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;}
+.timer-preset.sel{border-color:var(--day-color);color:var(--day-color);}
+
+/* FINISH BANNER */
+.finish-banner{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:40px;}
+.finish-banner.show{display:flex;}
+.finish-emoji{font-size:64px;margin-bottom:16px;}
+.finish-title{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--day-color);letter-spacing:2px;}
+.finish-sub{font-size:14px;color:var(--muted);margin-top:8px;margin-bottom:32px;line-height:1.8;}
+.finish-btn{padding:14px 40px;background:var(--day-color);color:#000;border:none;border-radius:8px;font-weight:700;font-size:14px;letter-spacing:2px;cursor:pointer;}
+
+/* RECORD */
+.record-header{padding:24px 20px 16px;border-bottom:1px solid var(--border);}
+.record-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;}
+.record-sub{font-size:11px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.record-list{padding:16px 20px 100px;}
+.record-month-label{font-size:10px;letter-spacing:2px;color:var(--muted);margin:16px 0 8px;}
+.record-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.record-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.record-info{flex:1;}
+.record-date{font-size:13px;font-weight:700;}
+.record-detail{font-size:11px;color:var(--muted);margin-top:2px;}
+.record-sets{font-family:'Bebas Neue',sans-serif;font-size:20px;}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+.empty-text{font-size:13px;line-height:1.8;}
+
+/* MENU */
+.menu-header{padding:24px 20px 16px;border-bottom:1px solid var(--border);}
+.menu-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;}
+.menu-body{padding:16px 20px 100px;}
+.menu-day-card{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+.menu-day-header{padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.menu-day-bar{width:4px;height:40px;border-radius:2px;flex-shrink:0;}
+.menu-day-info{flex:1;}
+.menu-day-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;}
+.menu-day-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.menu-chevron{color:var(--muted);transition:transform .25s;}
+.menu-day-card.open .menu-chevron{transform:rotate(180deg);}
+.menu-ex-list{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+.menu-day-card.open .menu-ex-list{max-height:3000px;}
+.menu-ex-item{padding:12px 16px;border-top:1px solid var(--border);}
+.menu-ex-name{font-size:13px;font-weight:700;}
+.menu-ex-sets{font-size:11px;color:var(--muted);margin-top:2px;}
+.menu-ex-how{list-style:none;margin-top:8px;}
+.menu-ex-how li{font-size:11px;color:#aaa;line-height:1.8;padding-left:12px;position:relative;}
+.menu-ex-how li::before{content:'–';position:absolute;left:0;}
+.menu-point{padding:6px 10px;font-size:11px;color:#aaa;line-height:1.6;border-radius:0 3px 3px 0;margin-top:4px;border-left:2px solid;}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="scroll-body">
+    <div class="home-header">
+      <div class="home-date" id="home-date"></div>
+      <div class="home-greeting" id="home-greeting"></div>
+    </div>
+    <div id="today-section"></div>
+    <div class="streak-row">
+      <div class="streak-icon">🔥</div>
+      <div class="streak-text">
+        <div class="streak-num" id="streak-num">0</div>
+        <div class="streak-label">DAY STREAK</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--muted)">今週の完了</div>
+        <div id="week-done-count" style="font-family:'Bebas Neue',sans-serif;font-size:28px">0/5</div>
+      </div>
+    </div>
+    <div class="week-cal">
+      <div class="week-cal-title">今週のトレーニング</div>
+      <div class="week-days" id="week-days"></div>
+    </div>
+  </div>
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="showScreen('home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>ホーム</div>
+    <div class="nav-item" onclick="showScreen('record')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>記録</div>
+    <div class="nav-item" onclick="showScreen('menu')"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>メニュー</div>
+  </nav>
+</div>
+
+<!-- WORKOUT -->
+<div class="screen" id="screen-workout">
+  <div class="workout-header">
+    <button class="back-btn" onclick="closeWorkout()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="workout-header-info">
+      <div class="workout-header-part" id="wh-part"></div>
+      <div class="workout-header-title" id="wh-title"></div>
+      <div class="workout-header-progress" id="wh-progress"></div>
+    </div>
+  </div>
+  <div class="scroll-body ex-list" id="ex-list"></div>
+  <button class="timer-fab" id="timer-fab" onclick="openTimer()">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 16"/><path d="M9 2h6"/></svg>
+    <span class="timer-count" id="fab-count" style="display:none"></span>
+  </button>
+</div>
+
+<!-- RECORD -->
+<div class="screen" id="screen-record">
+  <div class="record-header">
+    <div class="record-title">TRAINING LOG</div>
+    <div class="record-sub">トレーニング記録</div>
+  </div>
+  <div class="scroll-body record-list" id="record-list"></div>
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="showScreen('home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>ホーム</div>
+    <div class="nav-item active" onclick="showScreen('record')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>記録</div>
+    <div class="nav-item" onclick="showScreen('menu')"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>メニュー</div>
+  </nav>
+</div>
+
+<!-- MENU -->
+<div class="screen" id="screen-menu">
+  <div class="menu-header"><div class="menu-title">WEEKLY MENU</div></div>
+  <div class="scroll-body menu-body" id="menu-body"></div>
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="showScreen('home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>ホーム</div>
+    <div class="nav-item" onclick="showScreen('record')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>記録</div>
+    <div class="nav-item active" onclick="showScreen('menu')"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>メニュー</div>
+  </nav>
+</div>
+
+<!-- TIMER MODAL -->
+<div class="timer-modal" id="timer-modal">
+  <div class="timer-label">REST TIMER</div>
+  <div class="timer-display" id="timer-display">01:00</div>
+  <div class="timer-presets" id="timer-presets">
+    <button class="timer-preset" onclick="setTimerSec(30,this)">30秒</button>
+    <button class="timer-preset sel" onclick="setTimerSec(60,this)">60秒</button>
+    <button class="timer-preset" onclick="setTimerSec(90,this)">90秒</button>
+  </div>
+  <div class="timer-btns">
+    <button class="timer-btn secondary" onclick="closeTimer()">閉じる</button>
+    <button class="timer-btn primary" id="timer-toggle-btn" onclick="toggleTimer()">スタート</button>
+  </div>
+</div>
+
+<!-- FINISH BANNER -->
+<div class="finish-banner" id="finish-banner">
+  <div class="finish-emoji">💪</div>
+  <div class="finish-title">COMPLETE!</div>
+  <div class="finish-sub" id="finish-sub"></div>
+  <button class="finish-btn" onclick="closeFinish()">ホームへ戻る</button>
+</div>
+
+<script>
+const DAYS=[
+  {name:'胸',eng:'CHEST',color:'#e85d04',exercises:[
+    {name:'ダンベルフライ',sets:3,reps:'10〜12回',rest:60,
+     how:['床またはベッドに仰向けになり、ダンベルを両手に持つ','肘を軽く曲げた状態で、腕を横に大きく開いていく','胸がしっかり伸びたところで止め、胸を絞るように腕を閉じて戻す','動作中、肘の角度は変えない（固定したまま）'],
+     points:['大胸筋を「伸ばして縮める」動作で徹底的に効かせる種目','5kgは十分な重さ。ゆっくり丁寧に行うことで効果が増す','閉じるときは「胸の前で抱きしめる」イメージで']},
+    {name:'ダンベルプレス（床）',sets:3,reps:'10〜12回',rest:60,
+     how:['仰向けに寝て膝を立て、ダンベルを胸の横に構える（肘90度）','息を吐きながら天井に向かってダンベルを押し上げる','頂点でダンベルを軽く近づけ、ゆっくり元の位置に戻す'],
+     points:['ベンチプレスの床版。大胸筋・三角筋前部・三頭筋を鍛える','肘が床につく手前で止めると大胸筋への刺激が維持できる','1個しかない場合は片手ずつ交互に行ってもOK']},
+    {name:'プッシュアップ（仕上げ）',sets:2,reps:'限界まで',rest:60,
+     how:['ダンベル2種目で疲れた胸を自重でさらに追い込む','ノーマルプッシュアップを限界の回数まで行う','きつくなったら膝をついてドロップセットとして継続してもOK'],
+     points:['筋肉を最後まで絞り切る「バーンアウト」の役割','回数より「胸で押す」感覚を最後まで意識することが大事']}
+  ]},
+  {name:'背中',eng:'BACK',color:'#06d6a0',exercises:[
+    {name:'ワンアームダンベルロウ',sets:3,reps:'各12回',rest:60,
+     how:['椅子や机に片手・片膝をついて体を水平に近い角度で支える','反対の手でダンベルを持ち、腕を真下に伸ばしてスタート','肘を天井方向に引き上げ、わき腹に近づける','ゆっくり下ろして繰り返す。左右交互に行う'],
+     points:['広背筋・僧帽筋を集中的に鍛えられる背中の王道種目','腕で引くのではなく「肘を引く」イメージが正解','引き上げた頂点で1秒止めると効果が増す']},
+    {name:'ダンベルシュラッグ',sets:3,reps:'15回',rest:45,
+     how:['ダンベルを両手に持って立ち、腕は体の横に自然に下ろす','肩を耳に近づけるように真上に「すくめる」','頂点で1秒キープし、ゆっくり下ろす'],
+     points:['僧帽筋上部を鍛え、首まわりのたくましさを作る','肩を前後に回さない。真上にすくめるだけでOK','1個しかない場合は片手ずつ行う']},
+    {name:'スーパーマン（ダンベル）',sets:3,reps:'10〜12回',rest:45,
+     how:['うつ伏せに寝て、ダンベルを両手に持って前に伸ばす','息を吐きながら両腕・胸・両足を同時に浮かせる','2秒キープしてゆっくり戻す'],
+     points:['自重版より負荷が増し、脊柱起立筋により効く','首に力が入りすぎないよう、視線は床へ。首を守ることが最優先']}
+  ]},
+  {name:'肩',eng:'SHOULDER',color:'#3a86ff',exercises:[
+    {name:'ダンベルショルダープレス',sets:3,reps:'10〜12回',rest:60,
+     how:['椅子に座り、ダンベルを肩の横に構える（肘90度）','息を吐きながら真上に押し上げ、頭上でダンベルを軽く近づける','ゆっくりスタート位置に戻す'],
+     points:['三角筋全体を鍛える肩のメイン種目','腰を反らせず、体幹を固めて行う。座って行うと安定しやすい','1個なら片腕ずつ交互に行う']},
+    {name:'ダンベルサイドレイズ',sets:3,reps:'12〜15回',rest:45,
+     how:['ダンベルを体の横に持って立ち、肘を軽く曲げる','腕を真横に肩の高さまでゆっくり上げる','2〜3秒かけてゆっくり下ろす'],
+     points:['三角筋中部（肩の横の丸み）を作る最重要種目','5kgは少し重め。反動を使いがちなので要注意','小指側を少し上に向けると（缶を傾けるイメージ）さらに効く']},
+    {name:'ダンベルリアレイズ',sets:3,reps:'12〜15回',rest:45,
+     how:['立って上体を45〜90度前傾させ、ダンベルを体の前に垂らす','肘を軽く曲げ、腕を真横に広げて肩の高さまで上げる','ゆっくり下ろして繰り返す'],
+     points:['三角筋後部（肩の後ろ）を鍛えることで肩の立体感が増す','後部は地味だが重要。前後バランスが怪我予防にも繋がる']}
+  ]},
+  {name:'腕',eng:'ARMS',color:'#ff006e',exercises:[
+    {name:'ダンベルカール',sets:3,reps:'10〜12回',rest:60,
+     how:['ダンベルを持って立ち、肘を体の横にしっかり固定する','手首を上に向けて肘を曲げ、肩の高さ近くまで持ち上げる','頂点で1秒止め、ゆっくり完全に伸ばして戻す'],
+     points:['5kgは二頭筋に適切な重さ。反動を使わず丁寧に','肘が前後にブレると効かない。わきを締めて固定が命','下ろすときに完全に伸ばすと可動域が広がり効果UP']},
+    {name:'ハンマーカール',sets:3,reps:'10〜12回',rest:45,
+     how:['手のひらを内側に向けてダンベルを持つ','親指が上を向いた状態のまま、肘を曲げて持ち上げる','ゆっくり元に戻す。手首を回さない'],
+     points:['上腕二頭筋の外側と前腕の腕橈骨筋を同時に鍛える','カールより少し重く感じる。グリップを強く握ること']},
+    {name:'ダンベルキックバック',sets:3,reps:'各12回',rest:45,
+     how:['片手・片膝を椅子につき、上体を水平に近い角度で保つ','反対の手でダンベルを持ち、肘を90度に曲げて脇の横に固定','前腕だけを後ろに伸ばしきり、ゆっくり戻す','左右交互に行う'],
+     points:['上腕三頭筋（二の腕の裏）に直接効く種目','肘の位置が下がらないよう、肩の高さに固定し続けることが重要','伸ばしきった状態で1秒止めると峰収縮が得られる']},
+    {name:'ダンベルリストカール',sets:2,reps:'15〜20回',rest:30,
+     how:['椅子に座り、前腕を膝の上に乗せてダンベルを持つ','手首だけをゆっくり上に曲げ、下に戻す','手のひら上向き（カール）と下向き（リバース）の両方行う'],
+     points:['前腕の太さとグリップ力を高める仕上げ種目','動作は小さくていい。手首だけを動かすことに集中']}
+  ]},
+  {name:'下半身',eng:'LOWER',color:'#ffbe0b',exercises:[
+    {name:'ゴブレットスクワット',sets:3,reps:'12〜15回',rest:60,
+     how:['ダンベルを両手で胸の前に縦に持ち、足を肩幅に開く','つま先をやや外向きにして、胸を張ったまましゃがむ','太ももが床と平行になるまで下げ、かかとで床を押して立ち上がる'],
+     points:['ダンベルを前に持つことで体幹が安定し、深くしゃがみやすい','膝がつま先の方向に向くよう意識。ニーインに注意','大腿四頭筋・臀筋・内転筋をまとめて鍛えられる']},
+    {name:'ダンベルランジ',sets:3,reps:'各脚10回',rest:60,
+     how:['ダンベルを両手に持って立ち、片足を大きく前に踏み出す','後ろ膝が床スレスレになるまで下ろす','前足のかかとで押して元の位置に戻り、左右交互に繰り返す'],
+     points:['大腿四頭筋・臀筋・ハムストリングスを鍛えるバランス種目','上体が前に倒れないよう、背筋を伸ばして胸を張る','前に出す歩幅が狭いと膝への負担が増す。大股を意識']},
+    {name:'ダンベルカーフレイズ',sets:3,reps:'20〜25回',rest:30,
+     how:['ダンベルを片手に持ち、もう片手で壁に軽く触れてバランスを取る','かかとをできるだけ高く上げてつま先立ちになる','頂点で1秒止め、ゆっくりかかとを下ろす','左右それぞれか、両手に持って両足同時でもOK'],
+     points:['ダンベルを持つことで自重より大幅に負荷アップ','反動を使わずゆっくり行うほど効果が高い','階段の端でかかとを下まで下げると可動域がさらに広がる']}
+  ]}
+];
+
+const DOW=['日','月','火','水','木','金','土'];
+const DOW_EN=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+let curDayIdx=null,setsDone={},memos={};
+let timerSec=60,timerRemain=60,timerRunning=false,timerIv=null;
+
+function gs(k,d){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;}}
+function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+function todayStr(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function getRecs(){return gs('wt_recs',[]);}
+function saveRec(r){const recs=getRecs();const t=todayStr();const i=recs.findIndex(x=>x.date===t&&x.dayIdx===r.dayIdx);if(i>=0)recs[i]=r;else recs.unshift(r);ss('wt_recs',recs);}
+
+function showScreen(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+n).classList.add('active');
+  if(n==='home')renderHome();
+  if(n==='record')renderRecord();
+  if(n==='menu')renderMenuScreen();
+}
+
+// ---- HOME ----
+function renderHome(){
+  const now=new Date();const dow=now.getDay();
+  document.getElementById('home-date').textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${DOW[dow]}）`;
+  const h=now.getHours();
+  document.getElementById('home-greeting').textContent=h<12?'おはようございます':h<17?'こんにちは':'おつかれさまです';
+  const di=dow>=1&&dow<=5?dow-1:null;
+  curDayIdx=di;
+  const ts=document.getElementById('today-section');
+  if(di!==null){
+    const day=DAYS[di];
+    document.documentElement.style.setProperty('--day-color',day.color);
+    const total=day.exercises.reduce((a,e)=>a+e.sets,0);
+    const rec=getRecs().find(r=>r.date===todayStr()&&r.dayIdx===di);
+    const done=rec?rec.setsDone:0;
+    const pct=total>0?Math.round(done/total*100):0;
+    ts.innerHTML=`<div class="today-card"><div class="today-card-accent"></div><div class="today-card-inner">
+      <div class="today-label">TODAY'S TRAINING</div>
+      <div class="today-day">${['MON','TUE','WED','THU','FRI'][di]}</div>
+      <div class="today-part">${day.name}　<span style="font-weight:300;font-size:16px;color:var(--muted)">${day.eng}</span></div>
+      <div class="today-sub">${day.exercises.length}種目 · 約15分</div>
+      <div class="today-progress-wrap">
+        <div class="today-progress-label"><span>進捗</span><span>${done}/${total} セット</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <button class="start-btn" onclick="openWorkout(${di})">${rec&&done>=total?'✓ 完了済み — 再確認':done>0?'▶ 続きから':'▶ トレーニング開始'}</button>
+    </div></div>`;
+  }else{
+    document.documentElement.style.setProperty('--day-color','#555');
+    ts.innerHTML=`<div class="rest-card"><div class="rest-icon">😴</div><div class="rest-title">REST DAY</div><div class="rest-sub">今日はオフの日。<br>しっかり休んで筋肉を回復させよう。</div></div>`;
+  }
+  renderStreak();renderWeekCal();
+}
+
+function renderStreak(){
+  const recs=getRecs();let streak=0;
+  const now=new Date();
+  for(let i=0;i<90;i++){
+    const d=new Date(now);d.setDate(now.getDate()-i);
+    const dw=d.getDay();if(dw===0||dw===6)continue;
+    const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const di=dw-1;const total=DAYS[di].exercises.reduce((a,e)=>a+e.sets,0);
+    const rec=recs.find(r=>r.date===ds&&r.dayIdx===di);
+    if(rec&&rec.setsDone>=total)streak++;
+    else if(i>0)break;
+  }
+  document.getElementById('streak-num').textContent=streak;
+  const ws=new Date(now);ws.setDate(now.getDate()-now.getDay()+1);
+  let wd=0;
+  for(let i=0;i<5;i++){const d=new Date(ws);d.setDate(ws.getDate()+i);
+    const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const total=DAYS[i].exercises.reduce((a,e)=>a+e.sets,0);
+    const rec=getRecs().find(r=>r.date===ds&&r.dayIdx===i);
+    if(rec&&rec.setsDone>=total)wd++;
+  }
+  document.getElementById('week-done-count').textContent=`${wd}/5`;
+}
+
+function renderWeekCal(){
+  const recs=getRecs();const now=new Date();const td=now.getDay();
+  const ws=new Date(now);ws.setDate(now.getDate()-td);
+  const c=document.getElementById('week-days');c.innerHTML='';
+  for(let i=0;i<7;i++){
+    const d=new Date(ws);d.setDate(ws.getDate()+i);
+    const dw=d.getDay();
+    const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const isToday=i===td;const di=dw>=1&&dw<=5?dw-1:null;
+    let cls='',style='',txt=d.getDate();
+    if(di!==null){
+      const col=DAYS[di].color;const total=DAYS[di].exercises.reduce((a,e)=>a+e.sets,0);
+      const rec=recs.find(r=>r.date===ds&&r.dayIdx===di);
+      if(rec&&rec.setsDone>=total){cls='done';style=`background:${col};border-color:${col};color:#000;font-weight:700;`;txt='✓';}
+      else if(isToday){style=`border-color:${col};color:${col};`;}
+      else if(d<now&&!isToday){style='opacity:.3';}
+    }else{style='opacity:.2';}
+    c.innerHTML+=`<div class="week-day"><div class="week-day-label">${DOW_EN[i]}</div><div class="week-day-dot ${cls}" style="${style}">${txt}</div></div>`;
+  }
+}
+
+// ---- WORKOUT ----
+function openWorkout(di){
+  curDayIdx=di;
+  const day=DAYS[di];
+  document.documentElement.style.setProperty('--day-color',day.color);
+  const saved=gs(`wt_sess_${todayStr()}_${di}`,null);
+  if(saved){setsDone=saved.s||{};memos=saved.m||{};}else{setsDone={};memos={};}
+  renderWorkoutHeader();renderExList();
+  showScreen('workout');
+  document.querySelector('#screen-workout .scroll-body').scrollTop=0;
+}
+
+function renderWorkoutHeader(){
+  const day=DAYS[curDayIdx];
+  document.getElementById('wh-part').textContent=`DAY ${curDayIdx+1} · ${['MON','TUE','WED','THU','FRI'][curDayIdx]}`;
+  document.getElementById('wh-title').textContent=`${day.name}　${day.eng}`;
+  updateProgress();
+}
+
+function totalSetsOf(di){return DAYS[di].exercises.reduce((a,e)=>a+e.sets,0);}
+
+function updateProgress(){
+  const day=DAYS[curDayIdx];
+  let total=0,done=0;
+  day.exercises.forEach((ex,ei)=>{total+=ex.sets;done+=(setsDone[ei]||[]).filter(Boolean).length;});
+  document.getElementById('wh-progress').textContent=`${done} / ${total} セット完了`;
+  if(done>=total&&total>0){saveWorkoutRecord();setTimeout(showFinish,500);}
+}
+
+function renderExList(){
+  const day=DAYS[curDayIdx];const c=document.getElementById('ex-list');c.innerHTML='';
+  day.exercises.forEach((ex,ei)=>{
+    const sd=setsDone[ei]||Array(ex.sets).fill(false);
+    const memo=memos[ei]||'';
+    let btns='';
+    for(let s=0;s<ex.sets;s++)btns+=`<button class="set-btn${sd[s]?' done':''}" onclick="toggleSet(${ei},${s})">${sd[s]?'✓':s+1}</button>`;
+    c.innerHTML+=`<div class="ex-card" id="exc-${ei}">
+      <div class="ex-head" onclick="this.closest('.ex-card').classList.toggle('open')">
+        <div class="ex-num-badge">${ei+1}</div>
+        <div class="ex-info"><div class="ex-name">${ex.name}</div><div class="ex-sets-label">${ex.sets}セット × ${ex.reps}　休憩${ex.rest}秒</div></div>
+        <span class="ex-chevron">+</span>
+      </div>
+      <div class="ex-body"><div class="ex-inner">
+        <div class="sets-tracker"><div class="sets-tracker-title">セット記録</div><div class="sets-row" id="sr-${ei}">${btns}</div></div>
+        <div class="ex-section"><div class="ex-section-title">やり方</div><ul class="ex-how">${ex.how.map(h=>`<li>${h}</li>`).join('')}</ul></div>
+        <div class="ex-section"><div class="ex-section-title">ポイント</div>${ex.points.map(p=>`<div class="point-item">${p}</div>`).join('')}</div>
+        <div class="ex-section"><div class="ex-section-title">メモ</div><textarea class="memo-area" placeholder="今日の感想・調子など…" onchange="saveMemo(${ei},this.value)">${memo}</textarea></div>
+      </div></div>
+    </div>`;
+  });
+}
+
+function toggleSet(ei,si){
+  const ex=DAYS[curDayIdx].exercises[ei];
+  if(!setsDone[ei])setsDone[ei]=Array(ex.sets).fill(false);
+  setsDone[ei][si]=!setsDone[ei][si];
+  saveSession();
+  const btn=document.getElementById('sr-'+ei).children[si];
+  btn.classList.toggle('done',setsDone[ei][si]);
+  btn.textContent=setsDone[ei][si]?'✓':si+1;
+  updateProgress();
+  const done=(setsDone[ei]||[]).filter(Boolean).length;
+  if(setsDone[ei][si]&&done<ex.sets){timerSec=ex.rest;timerRemain=ex.rest;openTimerAuto();}
+}
+
+function saveMemo(ei,v){memos[ei]=v;saveSession();}
+function saveSession(){ss(`wt_sess_${todayStr()}_${curDayIdx}`,{s:setsDone,m:memos});}
+
+function saveWorkoutRecord(){
+  const day=DAYS[curDayIdx];
+  let total=0,done=0;
+  day.exercises.forEach((ex,ei)=>{total+=ex.sets;done+=(setsDone[ei]||[]).filter(Boolean).length;});
+  const memo=Object.values(memos).filter(Boolean).join(' / ');
+  saveRec({date:todayStr(),dayIdx:curDayIdx,setsTotal:total,setsDone:done,memo});
+}
+
+function showFinish(){
+  const day=DAYS[curDayIdx];
+  document.getElementById('finish-sub').innerHTML=`${day.name}トレーニング完了！<br>お疲れ様でした 💪<br><br>水分補給とストレッチを忘れずに。`;
+  document.getElementById('finish-banner').classList.add('show');
+}
+
+function closeFinish(){document.getElementById('finish-banner').classList.remove('show');closeWorkout();}
+function closeWorkout(){saveWorkoutRecord();showScreen('home');}
+
+// ---- TIMER ----
+function openTimer(){
+  timerRemain=timerSec;updateTimerDisp();
+  document.getElementById('timer-modal').classList.add('show');
+  document.getElementById('timer-toggle-btn').textContent='スタート';
+  timerRunning=false;clearInterval(timerIv);
+}
+function openTimerAuto(){
+  timerRemain=timerSec;updateTimerDisp();
+  document.getElementById('timer-modal').classList.add('show');
+  document.getElementById('timer-toggle-btn').textContent='一時停止';
+  timerRunning=true;
+  clearInterval(timerIv);
+  timerIv=setInterval(tickTimer,1000);
+}
+function closeTimer(){clearInterval(timerIv);timerRunning=false;document.getElementById('timer-modal').classList.remove('show');}
+function setTimerSec(s,btn){
+  clearInterval(timerIv);timerRunning=false;
+  timerSec=s;timerRemain=s;updateTimerDisp();
+  document.getElementById('timer-toggle-btn').textContent='スタート';
+  document.querySelectorAll('.timer-preset').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+function toggleTimer(){
+  if(timerRunning){clearInterval(timerIv);timerRunning=false;document.getElementById('timer-toggle-btn').textContent='スタート';}
+  else{timerRunning=true;document.getElementById('timer-toggle-btn').textContent='一時停止';timerIv=setInterval(tickTimer,1000);}
+}
+function tickTimer(){
+  timerRemain--;updateTimerDisp();
+  if(timerRemain<=0){clearInterval(timerIv);timerRunning=false;timerRemain=timerSec;updateTimerDisp();closeTimer();}
+}
+function updateTimerDisp(){
+  const m=Math.floor(timerRemain/60),s=timerRemain%60;
+  document.getElementById('timer-display').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+// ---- RECORD ----
+function renderRecord(){
+  const recs=getRecs();const c=document.getElementById('record-list');
+  if(!recs.length){c.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">まだ記録がありません。<br>トレーニングを完了すると<br>ここに記録が残ります。</div></div>`;return;}
+  const groups={};
+  recs.forEach(r=>{const m=r.date.slice(0,7);if(!groups[m])groups[m]=[];groups[m].push(r);});
+  let html='';
+  Object.keys(groups).sort().reverse().forEach(m=>{
+    const [y,mo]=m.split('-');
+    html+=`<div class="record-month-label">${y}年${parseInt(mo)}月</div>`;
+    groups[m].forEach(r=>{
+      const day=DAYS[r.dayIdx];const d=new Date(r.date+'T00:00:00');
+      html+=`<div class="record-item">
+        <div class="record-dot" style="background:${day.color}"></div>
+        <div class="record-info">
+          <div class="record-date">${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）　${day.name}</div>
+          <div class="record-detail">${r.memo||'—'}</div>
+        </div>
+        <div class="record-sets" style="color:${day.color}">${r.setsDone}/${r.setsTotal}</div>
+      </div>`;
+    });
+  });
+  c.innerHTML=html;
+}
+
+// ---- MENU ----
+function renderMenuScreen(){
+  const c=document.getElementById('menu-body');
+  const wdays=['月曜日','火曜日','水曜日','木曜日','金曜日'];
+  c.innerHTML=DAYS.map((day,di)=>`
+    <div class="menu-day-card">
+      <div class="menu-day-header" onclick="this.closest('.menu-day-card').classList.toggle('open')">
+        <div class="menu-day-bar" style="background:${day.color}"></div>
+        <div class="menu-day-info">
+          <div class="menu-day-name" style="color:${day.color}">${wdays[di]}　${day.name}</div>
+          <div class="menu-day-sub">${day.exercises.length}種目 · 約15分</div>
+        </div>
+        <span class="menu-chevron">▾</span>
+      </div>
+      <div class="menu-ex-list">
+        ${day.exercises.map(ex=>`
+          <div class="menu-ex-item">
+            <div class="menu-ex-name">${ex.name}</div>
+            <div class="menu-ex-sets">${ex.sets}セット × ${ex.reps}　休憩${ex.rest}秒</div>
+            <ul class="menu-ex-how">${ex.how.map(h=>`<li style="--c:${day.color}">${h}</li>`).join('')}</ul>
+            ${ex.points.map(p=>`<div class="menu-point" style="border-color:${day.color};background:color-mix(in srgb,${day.color} 8%,transparent)">${p}</div>`).join('')}
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+renderHome();
+</script>
+</body>
+</html>
