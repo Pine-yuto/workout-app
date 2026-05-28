@@ -53,7 +53,11 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Sans JP",sans-seri
 .streak-num{font-family:"Bebas Neue",sans-serif;font-size:32px;line-height:1;color:#ffbe0b;}
 .streak-label{font-size:11px;color:var(--muted);letter-spacing:1px;}
 .week-cal{margin:0 20px 20px;}
-.week-cal-title{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:10px;}
+.week-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.week-cal-title{font-size:10px;letter-spacing:2px;color:var(--muted);flex:1;text-align:center;}
+.week-nav-btn{background:none;border:1px solid var(--border);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);flex-shrink:0;}
+.week-nav-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
+.week-nav-btn:disabled{opacity:.2;cursor:default;}
 .week-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
 .week-day{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .week-day-label{font-size:9px;color:var(--muted);}
@@ -171,7 +175,11 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Sans JP",sans-seri
       </div>
     </div>
     <div class="week-cal">
-      <div class="week-cal-title">今週のトレーニング</div>
+      <div class="week-cal-header">
+        <button class="week-nav-btn" onclick="shiftWeek(-1)"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div class="week-cal-title" id="week-cal-title">今週のトレーニング</div>
+        <button class="week-nav-btn" id="week-nav-next" onclick="shiftWeek(1)"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
       <div class="week-days" id="week-days"></div>
     </div>
   </div>
@@ -320,7 +328,7 @@ const DAY_ENG=["MON","TUE","WED","THU","FRI","SAT"];
 // dow 1-6 -> dayIdx 0-5; 0(sun)=null
 function dowToDi(dw){return(dw>=1&&dw<=6)?dw-1:null;}
 
-let curDayIdx=null,viewDayIdx=null,workoutDate=null;
+let curDayIdx=null,viewDayIdx=null,workoutDate=null,weekOffset=0;
 let setsDone={},memos={};
 let timerSec=60,timerRemain=60,timerRunning=false,timerIv=null;
 
@@ -347,8 +355,8 @@ function renderHome(){
   const todayDi=dowToDi(dow);
   curDayIdx=todayDi;
   if(viewDayIdx===null)viewDayIdx=todayDi!==null?todayDi:0;
-  renderDaySelector(todayDi);
-  renderTodayCard(viewDayIdx,todayDi);
+  renderDaySelector(weekOffset===0?todayDi:null);
+  renderTodayCard(viewDayIdx,weekOffset===0?todayDi:null);
   renderStreak();
   renderWeekCal();
 }
@@ -371,21 +379,46 @@ function renderDaySelector(todayDi){
 
 function selectDay(di){
   viewDayIdx=di;
-  const todayDi=dowToDi(new Date().getDay());
+  const todayDi=weekOffset===0?dowToDi(new Date().getDay()):null;
   document.documentElement.style.setProperty("--day-color",DAYS[di].color);
   renderDaySelector(todayDi);
   renderTodayCard(di,todayDi);
 }
 
 function getDateForDayIdx(di){
-  // Return this week's date for that dayIdx (di+1 = dow)
+  // Return the selected week's date for that dayIdx
   const now=new Date();
   const thisDow=now.getDay();
-  const targetDow=di+1;
-  const diff=targetDow-thisDow;
-  const d=new Date(now);
-  d.setDate(now.getDate()+diff);
+  // Start of selected week (Sunday)
+  const weekSun=new Date(now);weekSun.setDate(now.getDate()-thisDow+weekOffset*7);
+  const targetDow=di+1; // dayIdx 0=Mon(dow1)...5=Sat(dow6)
+  const d=new Date(weekSun);d.setDate(weekSun.getDate()+targetDow);
   return dstr(d);
+}
+
+function renderTodayCardForDate(di,targetDate,todayDi){
+  const day=DAYS[di];
+  document.documentElement.style.setProperty("--day-color",day.color);
+  const total=day.exercises.reduce((a,e)=>a+e.sets,0);
+  const rec=getRecs().find(r=>r.date===targetDate&&r.dayIdx===di);
+  const done=rec?rec.setsDone:0;
+  const pct=total>0?Math.round(done/total*100):0;
+  const isToday=di===todayDi&&weekOffset===0;
+  const d=new Date(targetDate+"T00:00:00");
+  const topLabel=isToday?"TODAY'S TRAINING":(d.getMonth()+1)+"月"+d.getDate()+"日（"+DOW[d.getDay()]+"）";
+  document.getElementById("today-section").innerHTML=
+    "<div class='today-card'><div class='today-card-accent'></div><div class='today-card-inner'>"+
+    "<div class='today-label'>"+topLabel+"</div>"+
+    "<div class='today-day'>"+DAY_ENG[di]+"</div>"+
+    "<div class='today-part'>"+day.name+"&nbsp;&nbsp;<span style='font-weight:300;font-size:16px;color:var(--muted)'>"+day.eng+"</span></div>"+
+    "<div class='today-sub'>"+day.exercises.length+"種目 · 約15分</div>"+
+    "<div class='today-progress-wrap'>"+
+    "<div class='today-progress-label'><span>進捗</span><span>"+done+"/"+total+" セット</span></div>"+
+    "<div class='progress-bar-bg'><div class='progress-bar-fill' style='width:"+pct+"%'></div></div>"+
+    "</div>"+
+    "<button class='start-btn' onclick='openWorkout("+di+",""+targetDate+"")'>"+
+    (rec&&done>=total?"✓ 完了済み — 再確認":done>0?"▶ 続きから":"▶ トレーニング開始")+
+    "</button></div></div>";
 }
 
 function renderTodayCard(di,todayDi){
@@ -434,25 +467,64 @@ function renderStreak(){
   document.getElementById("week-done-count").textContent=wd+"/6";
 }
 
+function shiftWeek(dir){
+  const newOffset=weekOffset+dir;
+  if(newOffset>0)return; // can't go future
+  if(newOffset<-8)return; // max ~2 months back
+  weekOffset=newOffset;
+  viewDayIdx=null; // reset selected day when changing week
+  renderWeekCal();
+  // Update day selector and card for new week context
+  const now=new Date();const todayDi=dowToDi(now.getDay());
+  // If current week, default to today's day; else default to Mon
+  viewDayIdx=weekOffset===0&&todayDi!==null?todayDi:0;
+  renderDaySelector(weekOffset===0?todayDi:null);
+  renderTodayCard(viewDayIdx,weekOffset===0?todayDi:null);
+}
+
 function renderWeekCal(){
   const recs=getRecs();const now=new Date();const td=now.getDay();
-  const ws=new Date(now);ws.setDate(now.getDate()-td);
+  // Base = this week's Sunday, shifted by weekOffset weeks
+  const ws=new Date(now);ws.setDate(now.getDate()-td+weekOffset*7);
   const c=document.getElementById("week-days");c.innerHTML="";
+  // Update title
+  const wMon=new Date(ws);wMon.setDate(ws.getDate()+1);
+  const wSat=new Date(ws);wSat.setDate(ws.getDate()+6);
+  const titleEl=document.getElementById("week-cal-title");
+  if(weekOffset===0){titleEl.textContent="今週のトレーニング";}
+  else if(weekOffset===-1){titleEl.textContent="先週のトレーニング";}
+  else{titleEl.textContent=(wMon.getMonth()+1)+"月"+wMon.getDate()+"日 〜 "+wSat.getDate()+"日";}
+  // Disable next button if current week
+  const nextBtn=document.getElementById("week-nav-next");
+  if(nextBtn)nextBtn.disabled=weekOffset>=0;
   for(let i=0;i<7;i++){
     const d=new Date(ws);d.setDate(ws.getDate()+i);
-    const dw=d.getDay();const ds=dstr(d);const isToday=i===td;
+    const dw=d.getDay();const ds=dstr(d);
+    const isToday=weekOffset===0&&i===td;
     const di=dowToDi(dw);
     let style="",txt=d.getDate(),cls="";
+    const isFuture=d>now&&!isToday;
     if(di!==null){
       const col=DAYS[di].color;const total=DAYS[di].exercises.reduce((a,e)=>a+e.sets,0);
       const rec=recs.find(r=>r.date===ds&&r.dayIdx===di);
       if(rec&&rec.setsDone>=total){cls="done";style="background:"+col+";border-color:"+col+";color:#000;font-weight:700;";txt="✓";}
       else if(isToday){style="border-color:"+col+";color:"+col+";font-weight:700;border-width:2px;";}
-      else if(d<now&&!isToday){style="border-color:"+col+";color:"+col+";opacity:.55;";}
-      else{style="border-color:"+col+";color:"+col+";opacity:.65;";}
+      else if(isFuture){style="border-color:"+col+";color:"+col+";opacity:.35;";}
+      else{style="border-color:"+col+";color:"+col+";opacity:.55;";}
     }else{style="opacity:.18";}
-    c.innerHTML+="<div class='week-day'><div class='week-day-label'>"+DOW_EN[i]+"</div><div class='week-day-dot "+cls+"' style='"+style+"'>"+txt+"</div></div>";
+    // Clickable days (Mon-Sat, not future)
+    const clickable=di!==null&&!isFuture;
+    const clickAttr=clickable?"onclick='selectWeekDay("+di+",""+ds+"")' style='cursor:pointer;"+style+"'":"style='"+style+"'";
+    c.innerHTML+="<div class='week-day'><div class='week-day-label'>"+DOW_EN[i]+"</div><div class='week-day-dot "+cls+"' "+clickAttr+">"+txt+"</div></div>";
   }
+}
+
+function selectWeekDay(di,dateStr){
+  viewDayIdx=di;
+  const todayDi=weekOffset===0?dowToDi(new Date().getDay()):null;
+  document.documentElement.style.setProperty("--day-color",DAYS[di].color);
+  renderDaySelector(todayDi);
+  renderTodayCardForDate(di,dateStr,todayDi);
 }
 
 function openWorkout(di,targetDate){
