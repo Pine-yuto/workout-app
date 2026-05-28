@@ -609,10 +609,15 @@ function openWorkout(di, targetDate) {
   if (saved) { setsDone = saved.s || {}; memos = saved.m || {}; }
   else        { setsDone = {}; memos = {}; }
 
-  var day = DAYS[di];
+  // If already fully done, enter review mode so COMPLETE banner doesn't fire immediately
+  var day0 = DAYS[di];
+  var tot0 = day0.exercises.reduce(function(a,e){ return a+e.sets; }, 0);
+  var dn0  = day0.exercises.reduce(function(a,ex,ei){ return a+(setsDone[ei]||[]).filter(Boolean).length; }, 0);
+  reviewMode = (dn0 >= tot0 && tot0 > 0);
+
   var isToday = (workoutDate === todayStr());
   document.getElementById("wh-part").textContent  = (isToday ? "TODAY · " : "") + DAY_EN[di];
-  document.getElementById("wh-title").textContent = day.name + "　" + day.eng;
+  document.getElementById("wh-title").textContent = day0.name + "　" + day0.eng;
   updateProgress();
   renderExList();
   showScreen("workout");
@@ -626,7 +631,10 @@ function updateProgress() {
     done  += (setsDone[ei] || []).filter(Boolean).length;
   });
   document.getElementById("wh-progress").textContent = done + " / " + total + " セット完了";
-  if (done >= total && total > 0) { saveWorkoutRecord(); setTimeout(showFinish, 500); }
+  var timerOpen = document.getElementById("timer-modal").classList.contains("show");
+  if (!reviewMode && !timerOpen && done >= total && total > 0) { saveWorkoutRecord(); setTimeout(showFinish, 500); }
+  if (reviewMode && done < total) { reviewMode = false; }
+
 }
 
 function renderExList() {
@@ -688,11 +696,12 @@ function renderExList() {
       this.classList.toggle("done", setsDone[ei][si]);
       this.textContent = setsDone[ei][si] ? "✓" : si + 1;
       saveSession();
-      updateProgress();
-      var doneCnt = (setsDone[ei] || []).filter(Boolean).length;
-      if (setsDone[ei][si] && doneCnt < ex.sets) {
+      // Show timer after any set completion (including last set of the exercise)
+      if (setsDone[ei][si]) {
         timerSec = ex.rest; timerRemain = ex.rest; openTimerAuto();
       }
+      // updateProgress after timer open so finish banner doesn't compete
+      updateProgress();
     });
   });
 }
@@ -755,7 +764,12 @@ function openTimerAuto() {
   document.getElementById("btn-timer-toggle").textContent = "一時停止";
   clearInterval(timerIv); timerIv = setInterval(tickTimer, 1000);
 }
-function closeTimer() { clearInterval(timerIv); timerRunning = false; document.getElementById("timer-modal").classList.remove("show"); }
+function closeTimer() {
+  clearInterval(timerIv); timerRunning = false;
+  document.getElementById("timer-modal").classList.remove("show");
+  // Check if workout is now complete (was blocked while timer was open)
+  if (curDayIdx !== null) { updateProgress(); }
+}
 function toggleTimer() {
   if (timerRunning) { clearInterval(timerIv); timerRunning = false; document.getElementById("btn-timer-toggle").textContent = "スタート"; }
   else { timerRunning = true; document.getElementById("btn-timer-toggle").textContent = "一時停止"; timerIv = setInterval(tickTimer, 1000); }
