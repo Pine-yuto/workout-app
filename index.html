@@ -408,7 +408,7 @@ function renderTodayCard(di,todayDi){
     "<div class='today-progress-label'><span>進捗</span><span>"+done+"/"+total+" セット</span></div>"+
     "<div class='progress-bar-bg'><div class='progress-bar-fill' style='width:"+pct+"%'></div></div>"+
     "</div>"+
-    "<button class='start-btn' onclick="openWorkout("+di+",'"+targetDate+"')">"+
+    "<button class='start-btn' onclick='openWorkout("+di+",\""+targetDate+"\")'>"+
     (rec&&done>=total?"✓ 完了済み — 再確認":done>0?"▶ 続きから":"▶ トレーニング開始")+
     "</button></div></div>";
 }
@@ -447,9 +447,10 @@ function renderWeekCal(){
       const col=DAYS[di].color;const total=DAYS[di].exercises.reduce((a,e)=>a+e.sets,0);
       const rec=recs.find(r=>r.date===ds&&r.dayIdx===di);
       if(rec&&rec.setsDone>=total){cls="done";style="background:"+col+";border-color:"+col+";color:#000;font-weight:700;";txt="✓";}
-      else if(isToday){style="border-color:"+col+";color:"+col+";";}
-      else if(d<now&&!isToday){style="opacity:.3";}
-    }else{style="opacity:.15";}
+      else if(isToday){style="border-color:"+col+";color:"+col+";font-weight:700;border-width:2px;";}
+      else if(d<now&&!isToday){style="border-color:"+col+";color:"+col+";opacity:.55;";}
+      else{style="border-color:"+col+";color:"+col+";opacity:.65;";}
+    }else{style="opacity:.18";}
     c.innerHTML+="<div class='week-day'><div class='week-day-label'>"+DOW_EN[i]+"</div><div class='week-day-dot "+cls+"' style='"+style+"'>"+txt+"</div></div>";
   }
 }
@@ -481,7 +482,7 @@ function renderExList(){
     let btns="";
     for(let s=0;s<ex.sets;s++)btns+="<button class='set-btn"+(sd[s]?" done":"")+"' onclick='toggleSet("+ei+","+s+")'>"+(sd[s]?"✓":s+1)+"</button>";
     c.innerHTML+="<div class='ex-card' id='exc-"+ei+"'>"+
-      "<div class='ex-head' onclick='this.closest(".ex-card").classList.toggle("open")'>"+
+      "<div class='ex-head' onclick='this.closest(\".ex-card\").classList.toggle(\"open\")'>"+
       "<div class='ex-num-badge'>"+(ei+1)+"</div>"+
       "<div class='ex-info'><div class='ex-name'>"+ex.name+"</div><div class='ex-sets-label'>"+ex.sets+"セット × "+ex.reps+"&nbsp;&nbsp;休憩"+ex.rest+"秒</div></div>"+
       "<span class='ex-chevron'>+</span></div>"+
@@ -550,7 +551,7 @@ function renderMenuScreen(){
   const wdays=["月曜日","火曜日","水曜日","木曜日","金曜日","土曜日"];
   document.getElementById("menu-body").innerHTML=DAYS.map((day,di)=>
     "<div class='menu-day-card'>"+
-    "<div class='menu-day-header' onclick='this.closest(".menu-day-card").classList.toggle("open")'>"+
+    "<div class='menu-day-header' onclick='toggleMenu(this)'>"+
     "<div class='menu-day-bar' style='background:"+day.color+"'></div>"+
     "<div class='menu-day-info'><div class='menu-day-name' style='color:"+day.color+"'>"+wdays[di]+"　"+day.name+"</div>"+
     "<div class='menu-day-sub'>"+day.exercises.length+"種目 · 約15分</div></div>"+
@@ -567,6 +568,8 @@ function renderMenuScreen(){
     "</div></div>"
   ).join("");
 }
+
+function toggleMenu(el){el.closest(".menu-day-card").classList.toggle("open");}
 
 renderHome();
 </script>
