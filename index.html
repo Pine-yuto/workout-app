@@ -141,6 +141,8 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Sans JP",sans-seri
 .menu-how li{font-size:11px;color:#aaa;line-height:1.8;padding-left:12px;position:relative;}
 .menu-how li::before{content:"–";position:absolute;left:0;}
 .menu-point{padding:6px 10px;font-size:11px;color:#aaa;line-height:1.6;border-radius:0 3px 3px 0;margin-top:4px;border-left:2px solid;}
+.ex-gif-wrap{margin-top:14px;border-radius:8px;overflow:hidden;background:#000;text-align:center;max-height:200px;}
+.ex-gif{width:100%;max-height:200px;object-fit:contain;display:block;}
 </style>
 </head>
 <body>
@@ -251,71 +253,71 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Sans JP",sans-seri
 // ===================== DATA =====================
 const DAYS = [
   { name:"胸", eng:"CHEST", color:"#e85d04", exercises:[
-    { name:"ダンベルフライ", sets:3, reps:"10〜12回", rest:60,
+    { name:"ダンベルフライ", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Fly.gif", sets:3, reps:"10〜12回", rest:60,
       how:["床またはベッドに仰向けになり、ダンベルを両手に持つ","肘を軽く曲げた状態で、腕を横に大きく開いていく","胸がしっかり伸びたところで止め、胸を絞るように腕を閉じて戻す","動作中、肘の角度は変えない（固定したまま）"],
       points:["大胸筋を「伸ばして縮める」動作で徹底的に効かせる種目","5kgは十分な重さ。ゆっくり丁寧に行うことで効果が増す","閉じるときは「胸の前で抱きしめる」イメージで"] },
-    { name:"ダンベルプレス（床）", sets:3, reps:"10〜12回", rest:60,
+    { name:"ダンベルプレス（床）", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/04/Dumbbell-Floor-Press.gif", sets:3, reps:"10〜12回", rest:60,
       how:["仰向けに寝て膝を立て、ダンベルを胸の横に構える（肘90度）","息を吐きながら天井に向かってダンベルを押し上げる","頂点でダンベルを軽く近づけ、ゆっくり元の位置に戻す"],
       points:["ベンチプレスの床版。大胸筋・三角筋前部・三頭筋を鍛える","肘が床につく手前で止めると大胸筋への刺激が維持できる","1個しかない場合は片手ずつ交互に行ってもOK"] },
-    { name:"プッシュアップ（仕上げ）", sets:2, reps:"限界まで", rest:60,
+    { name:"プッシュアップ（仕上げ）", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Push-Up.gif", sets:2, reps:"限界まで", rest:60,
       how:["ダンベル2種目で疲れた胸を自重でさらに追い込む","ノーマルプッシュアップを限界の回数まで行う","きつくなったら膝をついてドロップセットとして継続してもOK"],
       points:["筋肉を最後まで絞り切る「バーンアウト」の役割","回数より「胸で押す」感覚を最後まで意識することが大事"] }
   ]},
   { name:"背中", eng:"BACK", color:"#06d6a0", exercises:[
-    { name:"ワンアームダンベルロウ", sets:3, reps:"各12回", rest:60,
+    { name:"ワンアームダンベルロウ", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Row.gif", sets:3, reps:"各12回", rest:60,
       how:["椅子や机に片手・片膝をついて体を水平に近い角度で支える","反対の手でダンベルを持ち、腕を真下に伸ばしてスタート","肘を天井方向に引き上げ、わき腹に近づける","ゆっくり下ろして繰り返す。左右交互に行う"],
       points:["広背筋・僧帽筋を集中的に鍛えられる背中の王道種目","腕で引くのではなく「肘を引く」イメージが正解","引き上げた頂点で1秒止めると効果が増す"] },
-    { name:"ダンベルシュラッグ", sets:3, reps:"15回", rest:45,
+    { name:"ダンベルシュラッグ", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/04/Dumbbell-Shrug.gif", sets:3, reps:"15回", rest:45,
       how:["ダンベルを両手に持って立ち、腕は体の横に自然に下ろす","肩を耳に近づけるように真上に「すくめる」","頂点で1秒キープし、ゆっくり下ろす"],
       points:["僧帽筋上部を鍛え、首まわりのたくましさを作る","肩を前後に回さない。真上にすくめるだけでOK","1個しかない場合は片手ずつ行う"] },
-    { name:"スーパーマン（ダンベル）", sets:3, reps:"10〜12回", rest:45,
+    { name:"スーパーマン（ダンベル）", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Superman.gif", sets:3, reps:"10〜12回", rest:45,
       how:["うつ伏せに寝て、ダンベルを両手に持って前に伸ばす","息を吐きながら両腕・胸・両足を同時に浮かせる","2秒キープしてゆっくり戻す"],
       points:["自重版より負荷が増し、脊柱起立筋により効く","首に力が入りすぎないよう、視線は床へ"] }
   ]},
   { name:"肩", eng:"SHOULDER", color:"#3a86ff", exercises:[
-    { name:"ダンベルショルダープレス", sets:3, reps:"10〜12回", rest:60,
+    { name:"ダンベルショルダープレス", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Shoulder-Press.gif", sets:3, reps:"10〜12回", rest:60,
       how:["椅子に座り、ダンベルを肩の横に構える（肘90度）","息を吐きながら真上に押し上げ、頭上でダンベルを軽く近づける","ゆっくりスタート位置に戻す"],
       points:["三角筋全体を鍛える肩のメイン種目","腰を反らせず、体幹を固めて行う","1個なら片腕ずつ交互に行う"] },
-    { name:"ダンベルサイドレイズ", sets:3, reps:"12〜15回", rest:45,
+    { name:"ダンベルサイドレイズ", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif", sets:3, reps:"12〜15回", rest:45,
       how:["ダンベルを体の横に持って立ち、肘を軽く曲げる","腕を真横に肩の高さまでゆっくり上げる","2〜3秒かけてゆっくり下ろす"],
       points:["三角筋中部（肩の横の丸み）を作る最重要種目","5kgは少し重め。反動を使いがちなので要注意","小指側を少し上に向けると（缶を傾けるイメージ）さらに効く"] },
-    { name:"ダンベルリアレイズ", sets:3, reps:"12〜15回", rest:45,
+    { name:"ダンベルリアレイズ", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Reverse-Fly.gif", sets:3, reps:"12〜15回", rest:45,
       how:["立って上体を45〜90度前傾させ、ダンベルを体の前に垂らす","肘を軽く曲げ、腕を真横に広げて肩の高さまで上げる","ゆっくり下ろして繰り返す"],
       points:["三角筋後部（肩の後ろ）を鍛えることで肩の立体感が増す","後部は地味だが重要。前後バランスが怪我予防にも繋がる"] }
   ]},
   { name:"腕", eng:"ARMS", color:"#ff006e", exercises:[
-    { name:"ダンベルカール", sets:3, reps:"10〜12回", rest:60,
+    { name:"ダンベルカール", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Curl.gif", sets:3, reps:"10〜12回", rest:60,
       how:["ダンベルを持って立ち、肘を体の横にしっかり固定する","手首を上に向けて肘を曲げ、肩の高さ近くまで持ち上げる","頂点で1秒止め、ゆっくり完全に伸ばして戻す"],
       points:["5kgは二頭筋に適切な重さ。反動を使わず丁寧に","肘が前後にブレると効かない。わきを締めて固定が命","下ろすときに完全に伸ばすと可動域が広がり効果UP"] },
-    { name:"ハンマーカール", sets:3, reps:"10〜12回", rest:45,
+    { name:"ハンマーカール", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Hammer-Curl.gif", sets:3, reps:"10〜12回", rest:45,
       how:["手のひらを内側に向けてダンベルを持つ","親指が上を向いた状態のまま、肘を曲げて持ち上げる","ゆっくり元に戻す。手首を回さない"],
       points:["上腕二頭筋の外側と前腕の腕橈骨筋を同時に鍛える","カールより少し重く感じる。グリップを強く握ること"] },
-    { name:"ダンベルキックバック", sets:3, reps:"各12回", rest:45,
+    { name:"ダンベルキックバック", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Kickback.gif", sets:3, reps:"各12回", rest:45,
       how:["片手・片膝を椅子につき、上体を水平に近い角度で保つ","反対の手でダンベルを持ち、肘を90度に曲げて脇の横に固定","前腕だけを後ろに伸ばしきり、ゆっくり戻す","左右交互に行う"],
       points:["上腕三頭筋（二の腕の裏）に直接効く種目","肘の位置が下がらないよう、肩の高さに固定し続けることが重要"] },
-    { name:"ダンベルリストカール", sets:2, reps:"15〜20回", rest:30,
+    { name:"ダンベルリストカール", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Wrist-Curl.gif", sets:2, reps:"15〜20回", rest:30,
       how:["椅子に座り、前腕を膝の上に乗せてダンベルを持つ","手首だけをゆっくり上に曲げ、下に戻す","手のひら上向き（カール）と下向き（リバース）の両方行う"],
       points:["前腕の太さとグリップ力を高める仕上げ種目","動作は小さくていい。手首だけを動かすことに集中"] }
   ]},
   { name:"下半身", eng:"LOWER", color:"#ffbe0b", exercises:[
-    { name:"ゴブレットスクワット", sets:3, reps:"12〜15回", rest:60,
+    { name:"ゴブレットスクワット", gif:"https://fitnessprogramer.com/wp-content/uploads/2023/01/Dumbbell-Goblet-Squat.gif", sets:3, reps:"12〜15回", rest:60,
       how:["ダンベルを両手で胸の前に縦に持ち、足を肩幅に開く","つま先をやや外向きにして、胸を張ったまましゃがむ","太ももが床と平行になるまで下げ、かかとで床を押して立ち上がる"],
       points:["ダンベルを前に持つことで体幹が安定し、深くしゃがみやすい","膝がつま先の方向に向くよう意識。ニーインに注意","大腿四頭筋・臀筋・内転筋をまとめて鍛えられる"] },
-    { name:"ダンベルランジ", sets:3, reps:"各脚10回", rest:60,
+    { name:"ダンベルランジ", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lunge.gif", sets:3, reps:"各脚10回", rest:60,
       how:["ダンベルを両手に持って立ち、片足を大きく前に踏み出す","後ろ膝が床スレスレになるまで下ろす","前足のかかとで押して元の位置に戻り、左右交互に繰り返す"],
       points:["大腿四頭筋・臀筋・ハムストリングスを鍛えるバランス種目","上体が前に倒れないよう、背筋を伸ばして胸を張る","前に出す歩幅が狭いと膝への負担が増す。大股を意識"] },
-    { name:"ダンベルカーフレイズ", sets:3, reps:"20〜25回", rest:30,
+    { name:"ダンベルカーフレイズ", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Calf-Raise.gif", sets:3, reps:"20〜25回", rest:30,
       how:["ダンベルを片手に持ち、もう片手で壁に軽く触れてバランスを取る","かかとをできるだけ高く上げてつま先立ちになる","頂点で1秒止め、ゆっくりかかとを下ろす"],
       points:["ダンベルを持つことで自重より大幅に負荷アップ","反動を使わずゆっくり行うほど効果が高い"] }
   ]},
   { name:"腹筋", eng:"ABS", color:"#9b5de5", exercises:[
-    { name:"クランチ", sets:3, reps:"15〜20回", rest:45,
+    { name:"クランチ", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Crunch.gif", sets:3, reps:"15〜20回", rest:45,
       how:["仰向けに寝て膝を立て、手を頭の後ろか胸の前に置く","息を吐きながら、肩甲骨が床から離れるまで上体を丸める","腹筋が縮まったところで1秒止め、ゆっくり戻す","首を無理に引っ張らず、腹筋で体を起こすイメージ"],
       points:["腹直筋（お腹の前面）をピンポイントで鍛える基本種目","頭を手で押し上げないこと。首への負担に注意","縮む動作で息を吐くのが基本"] },
-    { name:"レッグレイズ", sets:3, reps:"12〜15回", rest:45,
+    { name:"レッグレイズ", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Raise.gif", sets:3, reps:"12〜15回", rest:45,
       how:["仰向けに寝て、手を体の横またはお尻の下に置く","両脚をそろえたまま、ゆっくり90度近くまで持ち上げる","腰が床から離れないようにしながら、ゆっくり下ろす","完全に床につける前に止めて繰り返すと効果が高まる"],
       points:["腹直筋の下部と腸腰筋を重点的に鍛える種目","腰が反ると腰痛の原因に。常に腰を床に押し付ける意識","きつければ膝を少し曲げて行ってOK"] },
-    { name:"プランク", sets:3, reps:"30〜60秒キープ", rest:45,
+    { name:"プランク", gif:"https://fitnessprogramer.com/wp-content/uploads/2021/02/Plank.gif", sets:3, reps:"30〜60秒キープ", rest:45,
       how:["肘とつま先だけで体を支え、体を一直線に保つ","お腹を軽く引っ込め、臀筋も締めて体幹全体を固める","目線は床へ向け、首をニュートラルに保つ","呼吸を止めずにゆっくり続ける"],
       points:["腹横筋・多裂筋など体幹の深層筋をまとめて鍛える","腰が落ちたりお尻が上がったりしたら一度休んでリセット","慣れたら時間を少しずつ延ばしていく（最終目標60秒）"] }
   ]}
@@ -663,7 +665,9 @@ function renderExList() {
     }
     setsHTML += "</div>";
 
+    var gifHTML = ex.gif ? "<div class='ex-gif-wrap'><img class='ex-gif' src='" + ex.gif + "' loading='lazy' onerror='hideGif(this)'></div>" : "";
     var bodyHTML = "<div class='ex-body'><div class='ex-inner'>" +
+      gifHTML +
       "<div class='sets-tracker'><div class='sets-title'>セット記録</div>" + setsHTML + "</div>" +
       "<div class='ex-sec'><div class='ex-sec-title'>やり方</div><ul class='ex-how'>" + howItems + "</ul></div>" +
       "<div class='ex-sec'><div class='ex-sec-title'>ポイント</div>" + pointItems + "</div>" +
@@ -696,11 +700,10 @@ function renderExList() {
       this.classList.toggle("done", setsDone[ei][si]);
       this.textContent = setsDone[ei][si] ? "✓" : si + 1;
       saveSession();
-      // Show timer after any set completion (including last set of the exercise)
-      if (setsDone[ei][si]) {
+      var doneCnt = (setsDone[ei] || []).filter(Boolean).length;
+      if (setsDone[ei][si] && doneCnt < ex.sets) {
         timerSec = ex.rest; timerRemain = ex.rest; openTimerAuto();
       }
-      // updateProgress after timer open so finish banner doesn't compete
       updateProgress();
     });
   });
@@ -833,6 +836,7 @@ function renderMenuScreen() {
 }
 
 // ===================== INIT =====================
+function hideGif(img){ try{ img.parentElement.style.display="none"; }catch(e){} }
 renderHome();
 </script>
 </body>
